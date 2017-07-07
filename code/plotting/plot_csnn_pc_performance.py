@@ -1,5 +1,7 @@
 from __future__ import division
 
+import matplotlib
+matplotlib.use('Agg')  # Force matplotlib to use any Xwindows backend.
 import matplotlib.pyplot as plt
 import cPickle as p
 import numpy as np
@@ -12,10 +14,10 @@ performance_dir = top_level_path + 'performance/csnn_pc/'
 if not os.path.isdir(performance_dir + 'performance_plots/'):
     os.makedirs(performance_dir + 'performance_plots/')
 
-print '\n'.join([ str(idx + 1) + ' | ' + file_name for idx, file_name in enumerate(sorted(os.listdir(performance_dir))) if '.txt' in file_name ]), '\n'
+print '\n'.join([ str(idx + 1) + ' | ' + file_name for idx, file_name in enumerate(sorted(os.listdir(performance_dir))) if '.p' in file_name ]), '\n'
 
 to_plot = raw_input('Enter the index of the file from above which you\'d like to plot: ')
-file_name = sorted([ file_name for file_name in os.listdir(performance_dir) if '.txt' in file_name ])[int(to_plot) - 1]
+file_name = sorted([ file_name for file_name in os.listdir(performance_dir) if '.p' in file_name ])[int(to_plot) - 1]
 
 # get pickled performances dictionary (voting mechanism, performance recordings over training)
 _, performances = p.load(open(performance_dir + file_name, 'rb'))
