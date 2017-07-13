@@ -1,7 +1,5 @@
 from __future__ import division
 
-import matplotlib
-matplotlib.use('Agg')  # Force matplotlib to use any Xwindows backend.
 import matplotlib.pyplot as plt
 import cPickle as p
 import numpy as np
@@ -14,10 +12,6 @@ performance_dir = os.path.join(top_level_path, 'performance', 'csnn_pc')
 if not os.path.isdir(os.path.join(performance_dir, 'performance_plots')):
     os.makedirs(os.path.join(performance_dir, 'performance_plots'))
 
-<<<<<<< HEAD
-=======
-print '\n'
->>>>>>> 776d3691de6f06ad0a06b0abfdc2171630b45ed4
 print '\n'.join([ str(idx + 1) + ' | ' + file_name for idx, file_name in enumerate(sorted(os.listdir(performance_dir))) if '.p' in file_name ]), '\n'
 
 to_plot = raw_input('Enter the index of the file from above which you\'d like to plot: ')
