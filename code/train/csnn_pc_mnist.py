@@ -916,11 +916,11 @@ def run_simulation():
 				# pickling performance recording and iteration number
 				p.dump((j, performances), open(os.path.join(performance_dir, ending + '.p'), 'wb'))
 
-				for performance in performances:
+			'''	for performance in performances:
 					print '\nClassification performance (' + performance + ')', performances[performance][1:int(j / float(update_interval)) + 1], \
 								'\nAverage performance:', sum(performances[performance][1:int(j / float(update_interval)) + 1]) / \
 									float(len(performances[performance][1:int(j / float(update_interval)) + 1])), '\n'
-					
+			'''
 			# set input firing rates back to zero
 			for name in input_population_names:
 				input_groups[name + 'e'].rate = 0
