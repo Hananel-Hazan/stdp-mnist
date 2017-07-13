@@ -1071,19 +1071,13 @@ if __name__ == '__main__':
 
 	# set parameters for simulation based on train / test mode
 	if test_mode:
-<<<<<<< HEAD
-		num_examples = 5000
-=======
->>>>>>> 776d3691de6f06ad0a06b0abfdc2171630b45ed4
+		num_examples = 1000
 		use_testing_set = True
 		do_plot_performance = False
 		record_spikes = True
 		ee_STDP_on = False
 	else:
-<<<<<<< HEAD
-		num_examples = 20000
-=======
->>>>>>> 776d3691de6f06ad0a06b0abfdc2171630b45ed4
+		num_examples = 10000
 		use_testing_set = False
 		do_plot_performance = False
 		record_spikes = True
