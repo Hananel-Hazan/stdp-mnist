@@ -22,7 +22,7 @@ from sklearn.cluster import KMeans
 from struct import unpack
 from brian import *
 
-# from memory_profiler import profile
+from memory_profiler import profile
 from util import *
 
 np.set_printoptions(threshold=np.nan, linewidth=200)
