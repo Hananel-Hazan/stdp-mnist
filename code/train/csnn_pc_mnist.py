@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 import brian as b
 import argparse
+import time
 import timeit
 import math
 import os
@@ -107,7 +108,7 @@ def plot_input(rates):
 	im = b.imshow(rates.reshape((28, 28)), interpolation = 'nearest', vmin=0, vmax=64, cmap=cmap.get_cmap('gray'))
 	b.colorbar(im)
 	b.title('Current input example')
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return im, fig
 
 
@@ -116,7 +117,7 @@ def update_input(rates, im, fig):
 	Update the input image to use for input plotting.
 	'''
 	im.set_array(rates.reshape((28, 28)))
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return im
 
 
@@ -133,7 +134,7 @@ def plot_cluster_centers(cluster_centers):
 	im = b.imshow(to_show, interpolation='nearest', vmin=0, vmax=wmax_ee, cmap=cmap.get_cmap('hot_r'))
 	b.colorbar(im)
 	b.title('Cluster centers')
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return im, fig
 
 
@@ -147,7 +148,7 @@ def update_cluster_centers(cluster_centers, im, fig):
 		for j in xrange(centers_sqrt):
 			to_show[i * conv_size : (i + 1) * conv_size, j * conv_size : (j + 1) * conv_size] = cluster_centers[i * centers_sqrt + j].reshape((conv_size, conv_size)).T
 	im.set_array(to_show)
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return im
 
 
@@ -227,7 +228,8 @@ def plot_2d_input_weights():
 	b.yticks(xrange(conv_size, conv_size * (n_e + 1), conv_size), xrange(1, n_e + 1))
 	b.xlabel('Convolution patch')
 	b.ylabel('Location in input (from top left to bottom right')
-	fig.canvas.draw()
+	#  fig.canvas.draw()
+        fig.savefig('2d_weights_conv:'+ str(conv_size) +'_n_e:'+ str(n_e) +'_time: ' + str(time.asctime()) + '.png')
 	return im, fig
 
 
@@ -237,7 +239,7 @@ def update_2d_input_weights(im, fig):
 	'''
 	weights = get_2d_input_weights()
 	im.set_array(weights)
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return im
 
 
@@ -271,7 +273,7 @@ def plot_patch_weights():
 		b.axhline(idx, ls='--', lw=1)
 	b.colorbar(im)
 	b.title('Between-patch connectivity')
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return im, fig
 
 
@@ -281,7 +283,7 @@ def update_patch_weights(im, fig):
 	'''
 	weights = get_patch_weights()
 	im.set_array(weights)
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return im
 
 
@@ -301,7 +303,7 @@ def plot_neuron_votes(assignments, spike_rates):
 	rects = b.bar(xrange(10), [ 0.1 ] * 10)
 	b.ylim([0, 1])
 	b.title('Percentage votes per label')
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return rects, fig
 
 
@@ -323,7 +325,7 @@ def update_neuron_votes(rects, fig, spike_rates):
 		for rect, h in zip(rects, all_summed_rates):
 			rect.set_height(h / float(total_votes))
 
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return rects
 
 
@@ -360,7 +362,7 @@ def plot_performance(fig_num, performances, num_evaluations):
 
 	b.ylim(ymax = 100)
 	b.title('Classification performance')
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 
 	return im, fig_num, fig
 
@@ -371,7 +373,7 @@ def update_performance_plot(im, performances, current_example_num, fig):
 	'''
 	performances = get_current_performance(performances, current_example_num)
 	im.set_ydata(performances.values())
-	fig.canvas.draw()
+	#  fig.canvas.draw()
 	return im, performances
 
 
@@ -775,7 +777,6 @@ def build_network():
 
 	print '\n'
 
-@profile  # "Decorator" to track memory consumption
 def run_simulation():
 	'''
 	Logic for running the simulation itself.
@@ -1032,7 +1033,7 @@ if __name__ == '__main__':
 	parser.add_argument('--random_inhibition_prob', type=float, default=0.0, help='Probability with which a neuron from the inhibitory layer connects to any given excitatory neuron with which \
 																															it is not already connected to via the inhibitory wiring scheme.')
 	parser.add_argument('--top_percent', type=int, default=10, help='The percentage of neurons which are allowed to cast "votes" in the "top_percent" labeling scheme.')
-	parser.add_argument('--do_plot', type=bool, default=False, help='Whether or not to display plots during network training / testing. Defaults to False, as this makes the network operation \
+	parser.add_argument('--do_plot', type=bool, default=True, help='Whether or not to display plots during network training / testing. Defaults to False, as this makes the network operation \
 																																				speedier, and possible to run on HPC resources.')
 	parser.add_argument('--sort_euclidean', type=bool, default=False, help='When plotting reshaped input -> excitatory weights, whether to plot each row (corresponding to locations in the input) \
 																																				sorted by Euclidean distance from the 0 matrix.')
@@ -1072,13 +1073,13 @@ if __name__ == '__main__':
 
 	# set parameters for simulation based on train / test mode
 	if test_mode:
-		num_examples = 1000
+		num_examples = 100
 		use_testing_set = True
 		do_plot_performance = False
 		record_spikes = True
 		ee_STDP_on = False
 	else:
-		num_examples = 10000
+		num_examples = 1000
 		use_testing_set = False
 		do_plot_performance = False
 		record_spikes = True
