@@ -23,6 +23,7 @@ perf_model_name = 'csnn_pc_inhibit_far'
 performance_dir = os.path.join(top_level_path, 'performance', perf_model_name)
 model_name = 'csnn_pc_inhibit_far'
 weight_dir = os.path.join(top_level_path, 'weights', model_name)
+end_weight_dir  = os.path.join(top_level_path, 'weights', model_name, 'end')
 plots_dir = os.path.join(top_level_path, 'plots', model_name)
 
 if not os.path.isdir(plots_dir):
@@ -295,8 +296,8 @@ def plot_performance(perf_file_name):
 
     plt.ylabel('Classification accuracy (out of 100%)')
 
-    title_strs = file_name[:file_name.index('weight') - 1].split('_')
-    if 'no_weight_sharing' in file_name:
+    # title_strs = file_name[:file_name.index('weight') - 1].split('_')
+    if 'no_weight_sharing' in file_name or not 'weight_sharing' in file_name:
         weight_sharing = 'no_weight_sharing'
     else:
         weight_sharing = 'weight_sharing'
@@ -313,14 +314,14 @@ def plot_performance(perf_file_name):
 # --------------------------
 print '\n'
 print '\n'.join([str(idx) + ' | ' + file_name for idx, file_name in
-                 enumerate([file_name for file_name in sorted(os.listdir(weight_dir)) if ('XeAe' in file_name) and file_name.split('npy')[0].split('_')[-1][0:-1] ==  file_name.split('npy')[0].split('_')[-2]])])
+                 enumerate([file_name for file_name in sorted(os.listdir(end_weight_dir)) if ('XeAe' in file_name) ])])
 print '\n'
 
 to_plot = raw_input('Enter the index of the file from above which you\'d like to plot: ')
 if to_plot == '':
-    file_name = [file_name for file_name in sorted(os.listdir(weight_dir)) if ('XeAe' in file_name) and file_name.split('npy')[0].split('_')[-1][0:-1] ==  file_name.split('npy')[0].split('_')[-2]][0]
+    file_name = [file_name for file_name in sorted(os.listdir(end_weight_dir)) if ('XeAe' in file_name)][0]
 else:
-    file_name = [file_name for file_name in sorted(os.listdir(weight_dir)) if ('XeAe' in file_name) and file_name.split('npy')[0].split('_')[-1][0:-1] ==  file_name.split('npy')[0].split('_')[-2]][int(to_plot)]
+    file_name = [file_name for file_name in sorted(os.listdir(end_weight_dir)) if ('XeAe' in file_name)][int(to_plot)]
 print file_name
 sort_euclidean = raw_input('Sort plot by Euclidean distance? (y / n, default no): ')
 if sort_euclidean in ['', 'n']:
