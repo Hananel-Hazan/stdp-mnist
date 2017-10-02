@@ -1324,6 +1324,7 @@ if __name__ == '__main__':
 	parser.add_argument('--wmax_exc', type=float, default=10.0, help='The max weight on synapses between any two connected excitatory neurons.')
 	parser.add_argument('--max_inhib', type=float, default=17.4, help='The maximum synapse weight for inhibitory to excitatory connections.')
 	parser.add_argument('--reset_state_vars', type=str, default='False', help='Whether to reset neuron / synapse state variables or run a "reset" period.')
+	parser.add_argument('--test_time', type=float, default=0.35, help='Time of showing a test example .')
 
 	# parse arguments and place them in local scope
 	args = parser.parse_args()
@@ -1396,9 +1397,11 @@ if __name__ == '__main__':
 	features_sqrt = int(math.ceil(math.sqrt(conv_features)))
 
 	# time (in seconds) per data example presentation and rest period in between
+
 	single_example_time = 0.35 * b.second
 	resting_time = 0.15 * b.second
-
+	if test_mode and test_remove_inhibition:
+		single_example_time = test_time * b.second
 	# set the update interval
 	if test_mode:
 		update_interval = num_examples

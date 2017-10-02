@@ -1096,6 +1096,7 @@ def run_train():
 
 
 def run_relabeling():
+	print 'starting the rlabeling mode'
 	global fig_num, input_intensity, previous_spike_count, rates, assignments, clusters, cluster_assignments, \
 				kmeans, kmeans_assignments, simple_clusters, simple_cluster_assignments, index_matrix, accumulated_rates, \
 				accumulated_inputs, spike_proportions
