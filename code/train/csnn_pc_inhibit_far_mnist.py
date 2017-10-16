@@ -19,12 +19,13 @@ import timeit
 import time
 import math
 import os
-
+import scipy
 from scipy.spatial.distance import euclidean
 from sklearn.metrics import confusion_matrix
 from sklearn.cluster import KMeans
 from struct import unpack
 from brian import *
+
 
 from util import *
 
@@ -50,9 +51,10 @@ end_weights_dir = os.path.join(weights_dir, 'end')
 misc_dir = os.path.join(top_level_path, 'misc', model_name)
 best_misc_dir = os.path.join(misc_dir, 'best')
 end_misc_dir = os.path.join(misc_dir, 'end')
+missclassified_dir = os.path.join(top_level_path, 'missclassified', model_name)
 
 for d in [ performance_dir, activity_dir, weights_dir, deltas_dir, random_dir, misc_dir, best_misc_dir, \
-			MNIST_data_path, results_path, plots_path, best_weights_dir, end_weights_dir, end_misc_dir ]:
+			MNIST_data_path, results_path, plots_path, best_weights_dir, end_weights_dir, end_misc_dir, missclassified_dir ]:
 	if not os.path.isdir(d):
 		os.makedirs(d)
 
@@ -202,8 +204,8 @@ def get_2d_input_weights():
 					for f_2 in xrange(features_sqrt):
 						square_weights[conv_size * (n_2 * features_sqrt + f_2) : conv_size * (n_2 * features_sqrt + f_2 + 1), \
 								conv_size * (n_1 * features_sqrt + f_1) : conv_size * (n_1 * features_sqrt + f_1 + 1)] = \
-						 		rearranged_weights[(f_1 * features_sqrt + f_2) * conv_size : (f_1 * features_sqrt + f_2 + 1) * conv_size, \
-						 				(n_1 * n_e_sqrt + n_2) * conv_size : (n_1 * n_e_sqrt + n_2 + 1) * conv_size]
+								rearranged_weights[(f_1 * features_sqrt + f_2) * conv_size : (f_1 * features_sqrt + f_2 + 1) * conv_size, \
+										(n_1 * n_e_sqrt + n_2) * conv_size : (n_1 * n_e_sqrt + n_2 + 1) * conv_size]
 
 		return square_weights.T
 
@@ -1132,6 +1134,7 @@ def run_test():
 		# run the network for a single example time
 		b.run(single_example_time)
 
+
 		if do_plot and exc_stdp and j == 0:
 				exc_weights_image = plt.matshow(connections['AeAe'][:].todense().T, cmap='binary', vmin=0, vmax=wmax_exc)
 				plt.colorbar()
@@ -1141,10 +1144,18 @@ def run_test():
 		current_spike_count = np.copy(spike_counters['Ae'].count[:]).reshape((conv_features, n_e)) - previous_spike_count
 		previous_spike_count = np.copy(spike_counters['Ae'].count[:]).reshape((conv_features, n_e))
 
+
+		print "Spike Counts"
+		curr_spike_count = current_spike_count
+		if np.sum(curr_spike_count)>0.0:
+			print curr_spike_count
+		else :
+			print "All zero for %d" %j
+
 		# if the neurons in the network didn't spike more than four times
 		if np.sum(current_spike_count) < 5 and num_retries < 3:
 			# increase the intensity of input
-			input_intensity += 2
+			input_intensity += 10
 			num_retries += 1
 			
 			# set all network firing rates to zero
@@ -1173,6 +1184,19 @@ def run_test():
 			# get the output classifications of the network
 			for scheme, outputs in predict_label(assignments, result_monitor[j % update_interval, :], accumulated_rates, spike_proportions).items():
 				output_numbers[scheme][j, :] = outputs
+
+			if not output_numbers['all'][j,0] == input_numbers[j]:
+				# If Misclassified
+				# Write image to file
+				print "Printing Misclassified Image. Predicted Label: %d True Label: %d " %(output_numbers['all'][j,0], input_numbers[j])
+				# np.save(os.path.join(missclassified_dir,'im_%5d.npy'%j), data['x'][j % data_size, :, :])
+				scipy.misc.imsave(os.path.join(missclassified_dir,'im_%5d.jpg'%j),  data['x'][j % data_size, :, :])
+				print data['x'][j % data_size, :, :]
+				print data['x'][j % data_size, :, :].shape
+				# print "Spike Counts"
+				# print current_spike_count
+				# print data['x'][j % data_size, :, :].shape
+
 
 			# print progress
 			if j % print_progress_interval == 0 and j > 0:
@@ -1325,6 +1349,7 @@ if __name__ == '__main__':
 	parser.add_argument('--max_inhib', type=float, default=17.4, help='The maximum synapse weight for inhibitory to excitatory connections.')
 	parser.add_argument('--reset_state_vars', type=str, default='False', help='Whether to reset neuron / synapse state variables or run a "reset" period.')
 	parser.add_argument('--test_time', type=float, default=0.35, help='Time of showing a test example .')
+	parser.add_argument('--normal_input', type=str, default='False', help='Time of showing a test example .')
 
 	# parse arguments and place them in local scope
 	args = parser.parse_args()
@@ -1361,6 +1386,8 @@ if __name__ == '__main__':
 	else:
 		data_size = 60000
 
+	normalize_input = normal_input == 'True'
+
 	# set brian global preferences
 	b.set_global_preferences(defaultclock = b.Clock(dt=0.5*b.ms), useweave = True, gcc_options = ['-ffast-math -march=native'], usecodegen = True,
 		usecodegenweave = True, usecodegenstateupdate = True, usecodegenthreshold = False, usenewpropagate = True, usecstdp = True, openmp = False,
@@ -1371,7 +1398,7 @@ if __name__ == '__main__':
 
 	start = timeit.default_timer()
 	data = get_labeled_data(os.path.join(MNIST_data_path, 'testing' if test_mode else 'training'), 
-												not test_mode, reduced_dataset, classes, examples_per_class)
+												not test_mode, reduced_dataset, classes, examples_per_class, normalize_input)
 	
 	print 'Time needed to load data:', timeit.default_timer() - start
 
@@ -1589,7 +1616,6 @@ if __name__ == '__main__':
 		accumulated_rates = np.zeros((conv_features * n_e, 10))
 		accumulated_inputs = np.zeros(10)
 		spike_proportions = np.zeros((conv_features * n_e, 10))
-	
 	# run the simulation of the network
 	if test_mode:
 		run_test()
